@@ -51,7 +51,7 @@ I like to use  `alt + enter` to accept the autosuggestion. To do that, add  `bin
 ## Installing nix package manager
 Although I have only recently learnt about the nix package manager, I was quickly drawn to it because of its underlying philosophy and ease of use. 
 
-I tried to install nix package manager on fedora first but encountered some issues. I think SELinux needs to be set to permissive first and then the command needs to be run. However I did install it without any errors on endeavourOS and that is what I am going to document for now:
+I tried to install nix package manager on fedora first but encountered some issues. I think SELinux needs to be set to `Permissive` first and then the command needs to be run. However I did install it without any errors on endeavourOS and that is what I am going to document for now:
 
 - Download the installation script:
 `curl --proto '=https' --tlsv1.2 -sSfL https://nixos.org/nix/install -o nix-install.sh`
@@ -114,3 +114,40 @@ To enable installation of unfree programs with nix, you need to add:
 }
 ```
 to `~/.config/nixpkgs/config.nix`. If the file or directory is not present, create them.
+
+Packages I installed with nix:
+`brave`, `obsidian`, `vlc`.
+
+## Distro and DE specific setups
+While writing this, I am using EndeavourOS with GNOME desktop environmnet(yes I know it sounds odd, believe me: I used to hate GNOME for being a memory hog, but after getting a beefed up system and suffering with broken KDE Plasma setups for a long time, I took refuge in GNOME, and you know what ? It's not that bad. At least GNOME 44 is pretty good and provides a stable while reasonably customizable experience). 
+
+By default, GNOME was using Wayland but I switched to using Xorg(call me backdated!).
+
+Firstly I install a few customization apps:
+`gnome-tweaks`, `extension-manager`, `sushi`(preinstalled with gnome).
+These are names of the packages as required by `pacman`.
+
+Next I install a few extensions:
+- Blur my shell
+- Compiz alike magic lamp effect
+- Dash to Dock
+- Just Perfection
+- Net speed Simplified
+- User Themes
+
+I use `Whitesur-gtk` theme for both shell and icons:
+```bash
+git clone https://github.com/vinceliuice/WhiteSur-gtk-theme.git
+git clone https://github.com/vinceliuice/WhiteSur-icon-theme.git
+```
+
+Install the bold version of icons with nord theme using:
+```bash
+./install.sh -b -t nord
+```
+use the `-a` flag for alternative design of icons.
+
+Install nord version of the theme with Nautilus set to `glassy` mode, Monterey style and maximized window to rounded using:
+```bash
+./install.sh --nord -N glassy -m --round
+```
