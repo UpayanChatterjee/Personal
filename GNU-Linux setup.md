@@ -2,11 +2,11 @@ In this document I will be making a comprehensive guide to my gnu/linux setup, m
 
 ## Change default shell to zsh
 While the default shell in most cases - bash - is pretty good, I prefer the zsh mostly because of its support of plugins (auto-suggest and syntax-highlighting).
-```
+```bash
 sudo pacman -S zsh
 ```
 After this I like to install `oh-my-zsh` framework:
-```
+```bash
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" # install oh-my-zsh for some cool themes
 ```
 I like to use the `powerlevel10k` theme for which some fonts are prerequisite:
@@ -16,7 +16,7 @@ I like to use the `powerlevel10k` theme for which some fonts are prerequisite:
 - [MesloLGS NF Bold Italic.ttf](https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf)
 Now go to the settings of the terminal application and force it to use the MesloLGS font(otherwise the `powerlevel10k` theme has trouble with the symbols and unicode(?) characters).
 Then,
-```
+```bash
 git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
 ```
 and set `ZSH_THEME="powerlevel10k/powerlevel10k"` in `~/.zshrc`.
@@ -51,3 +51,66 @@ I like to use  `alt + enter` to accept the autosuggestion. To do that, add  `bin
 ## Installing nix package manager
 Although I have only recently learnt about the nix package manager, I was quickly drawn to it because of its underlying philosophy and ease of use. 
 
+I tried to install nix package manager on fedora first but encountered some issues. I think SELinux needs to be set to permissive first and then the command needs to be run. However I did install it without any errors on endeavourOS and that is what I am going to document for now:
+
+- Download the installation script:
+`curl --proto '=https' --tlsv1.2 -sSfL https://nixos.org/nix/install -o nix-install.sh`
+- (Optional) View it:
+`less ./nix-install.sh`
+- Make it executable:
+`chmod +x ./install.sh`
+- Execute the script:
+`./install.sh`
+
+Now to have the nix daemon launched at boot time, one needs to enable the `nix-daemon.service` service:
+```bash
+sudo systemctl start nix-daemon.service
+sudo systemctl enable nix-daemon.service
+```
+
+Now add channels and update them using :
+```bash
+nix-channel --add https://nixos.org/channels/nixpkgs-unstable
+nix-channel --update
+```
+In place of `nixpkgs-unstable` you can also have stable: `nixos-22.11`, large channels(provide binary builds for the full breadth of Nixpkgs): `nixos-unstable` and small channels(identical to large channels, but contain fewer binaries. This means they update faster, but require more to be built from source): `nixos-unstable-small`.
+
+To install a package `pkg`, 
+```bash
+nix-env -iA nixpkgs.pkg
+```
+To do away with writing `nix-env -iA` every time installing a package, you can add an alias to your `.zshrc`:
+```bash
+alias nix-install="nix-env -iA"
+```
+
+To uninstall a package `pkg`:
+```bash
+nix-env --uninstall pkg
+```
+Check list of installed program:
+```bash
+nix-env -q
+```
+
+One issue that I ran into was that programs installed by nix package manager did not show up in application menu (of GNOME in my case). The problem was that application menus scan for `*.desktop` files under `/usr/share/applications` but nix keeps the `.desktop` file of packages installed by it in `~/.nix-profile/share/applications`. One way to resolve the problem is to create a system link of the latter to the former:
+```bash
+sudo ln -s ~/.nix-profile/share/applications/* /usr/share/applications
+```
+However this command needs to be run every time you install a new package using nix. So you can create an alias of it in your `.zshrc`:
+```bash
+alias show-nixapp-in-menu="sudo ln -s ~/.nix-profile/share/applications/* /usr/share/applications"
+```
+
+**Warning:** In case you want to uninstall a program installed by nix and reinstall it using `pacman` or `yay` or your default package manager, don't forget to delete the `.desktop` file of the program after uninstalling it with nix otherwise there will be conflict when your default package would want to create a `.desktop` file in `/usr/share/applications` and find that it already exists and thus exit the installation process with error.
+
+**Sidenote:** I installed vscode with nix while using Whitesur-gtk-icon-theme. I found out that the icon of vscode was that of a text editor and not of vscode. To change the icon, go to the correspoding `.desktop` file of vscode(generally in `/usr/share/applications`) and change all instances of `Icon=code` to `Icon=visual-studio-code`. However soon I found out that installing vscode with nix would not open external links in browser which prevented me from using `settings sync`. Unfortunately the only fix I could find was to install vscode using `yay` or `pacman` (I used `yay`).
+
+To enable installation of unfree programs with nix, you need to add:
+```bash
+{
+  # Enable searching for and installing unfree packages
+  allowUnfree = true;
+}
+```
+to `~/.config/nixpkgs/config.nix`. If the file or directory is not present, create them.
