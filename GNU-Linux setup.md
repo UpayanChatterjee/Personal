@@ -132,6 +132,7 @@ Next I install a few extensions:
 - Compiz alike magic lamp effect
 - Dash to Dock
 - Just Perfection
+- Media Controls
 - Net speed Simplified
 - User Themes
 
